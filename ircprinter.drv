@@ -1,0 +1,33 @@
+// Include standard font and media definitions
+#include <font.defs>
+#include <media.defs>
+
+// Specify this is a PostScript printer driver
+DriverType ps
+
+// List the fonts that are supported, in this case all standard fonts
+Font *
+
+// Manufacturer, model name, and version
+Manufacturer "Vifino"
+ModelName "Irc Backend"
+Version 1.0
+
+// PostScript printer attributes
+Attribute DefaultColorSpace "" Gray
+Attribute LandscapeOrientation "" Minus90
+Attribute LanguageLevel "" "3"
+Attribute Product "" "Irc Cups Backend"
+Attribute PSVersion "" "(3010) 0"
+Attribute TTRasterizer "" Type42
+
+// Supported page sizes
+*MediaSize A4
+
+// Filters
+Filter "application/vnd.cups-postscript 100 ps2pdf"
+Filter "application/vnd.cups-postscript 200 ircout"
+
+// Specify the name of the PPD file we want to generate
+PCFileName "ircprinter.ppd"
+
