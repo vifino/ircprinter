@@ -5,22 +5,22 @@ clean:
 	rm ppd/*
 	@echo -e "\e[32mDone removing targets.\e[0;37m"
 
-add-printer:
+add-printer: ppd
 	@echo -e "\e[32mAdding printer ...\e[37m"
 	test -r /root
-	lpadmin -P ppd/ircprinter.ppd -L Local -D "IRC Output" -p IRC-OUT -E
+	lpadmin -P ppd/ircprinter.ppd -L Local -D "IRC Output" -p IRCPRINTER -E
 	@echo -e "\e[32mDone adding printer.\e[37m"
 
 rm-printer:
 	@echo -e "\e[32mRemoving printer ...\e[37m"
 	test -r /root
-	lpadmin -x HPGL-CUPS
+	lpadmin -x IRCPRINTER
 	@echo -e "\e[32mDone removing printer.\e[37m"
 
 reinstall-printer: rm-printer add-printer
 
 lpstat:
-	@lpstat -p IRC-OUT
+	@lpstat -p IRC-PRINTER
 
 redo: all
 	sudo make install
@@ -29,19 +29,20 @@ redo: all
 install:
 	@echo -e "\e[32mCreating files ...\e[0;37m"
 	test -r /root #ROOT NEEDED!!
-	cp $$(realpath src/ircout) /usr/lib/cups/backend/ircout
+	cp $$(realpath src/ircprinter) /usr/lib/cups/filter/ircprinter
+	cp $$(realpath src/ircprinter.default) /etc/default/ircprinter
 	@echo -e "\e[32mDone creating files.\e[0;37m"
 
 uninstall:
 	@echo -e "\e[32mRemoving files ...\e[0;37m"
 	test -r /root #ROOT NEEDED!!
-	rm /usr/lib/cups/backend/ircout
+	rm /usr/lib/cups/backend/ircprinter
 	@echo -e "\e[32mDone removing files.\e[0;37m"
 
 ppd: ppd/ircprinter.ppd
 
-ppd/ircprinter.ppd: ircprinter.drv
+ppd/ircprinter.ppd: src/ircprinter.drv
 	@echo -e "\e[32mGenerating \e[1;34mppd file\e[0;32m ...\e[0;37m"
-	ppdc ircprinter.drv
+	ppdc src/ircprinter.drv
 	@echo -e "\e[32mDone generating \e[1;34mppd file\e[0;32m.\e[0;37m"
 

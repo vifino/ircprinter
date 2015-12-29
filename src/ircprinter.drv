@@ -9,15 +9,15 @@ DriverType ps
 Font *
 
 // Manufacturer, model name, and version
-Manufacturer "Vifino"
-ModelName "Irc Backend"
-Version 1.0
+Manufacturer "vifino"
+ModelName "IRC Backend"
+Version 0.1
 
 // PostScript printer attributes
 Attribute DefaultColorSpace "" Gray
 Attribute LandscapeOrientation "" Minus90
 Attribute LanguageLevel "" "3"
-Attribute Product "" "Irc Cups Backend"
+Attribute Product "" "IRC CUPS Backend"
 Attribute PSVersion "" "(3010) 0"
 Attribute TTRasterizer "" Type42
 
@@ -25,9 +25,8 @@ Attribute TTRasterizer "" Type42
 *MediaSize A4
 
 // Filters
-Filter "application/vnd.cups-postscript 100 ps2pdf"
-Filter "application/vnd.cups-postscript 200 ircout"
+//Filter "application/vnd.cups-postscript 100 ps2pdf"
+Filter "application/vnd.cups-postscript 100 ircprinter"
 
 // Specify the name of the PPD file we want to generate
 PCFileName "ircprinter.ppd"
-
