@@ -30,7 +30,7 @@ install:
 	@echo -e "\e[32mCreating files ...\e[0;37m"
 	test -r /root #ROOT NEEDED!!
 	cp $$(realpath src/ircprinter) /usr/lib/cups/filter/ircprinter
-	cp $$(realpath src/ircprinter.default) /etc/default/ircprinter
+	test -f /etc/default/ircprinter || cp $$(realpath src/ircprinter.default) /etc/default/ircprinter
 	@echo -e "\e[32mDone creating files.\e[0;37m"
 
 uninstall:

@@ -14,7 +14,7 @@ ModelName "IRC Backend"
 Version 0.1
 
 // PostScript printer attributes
-Attribute DefaultColorSpace "" Gray
+Attribute DefaultColorSpace "" RGB
 Attribute LandscapeOrientation "" Minus90
 Attribute LanguageLevel "" "3"
 Attribute Product "" "IRC CUPS Backend"
