@@ -37,11 +37,19 @@ INPUT="$6"
 PDF="/tmp/ircprinter.$$.print.pdf"
 II_PATH="/tmp/ircprinter.$$"
 
+cleanup() {
+	# Cleanup func, removes temp files and makes sure ii is dead.
+	echo "/QUIT" > "$II_PATH/$SERVER/in"
+	rm -rf "$II_PATH" "$PDF"
+}
+
+trap cleanup INT TERM EXIT 
+
 # Source config.
 source /etc/default/ircprinter || exit 1
 
 # Connect to IRC and send the PDF.
-ii -i "$II_PATH" -s "$SERVER" -p "$PORT" -n "$NICK" &> /dev/null &
+ii -i "$II_PATH" -s "$SERVER" -p "$PORT" -n "$NICK" -f "$REAL" &> /dev/null &
 IRC_SERVER_BASE="$II_PATH/$SERVER"
 IRC_IN="$IRC_SERVER_BASE/in"
 
@@ -51,7 +59,7 @@ while [ ! -e "$IRC_IN" ]; do
 done
 
 # Convert the PDF to use the time ii takes to initialize.
-ps2pdf "$INPUT" "$PDF"
+ps2pdf "$INPUT" "$PDF" || exit 1
 uploaded_pdf=`curl -s "https://puush.me/api/up" -# -F "k=$PUUSH_API_KEY" -F "z=printer" -F "f=@$PDF" | sed -E 's/^.+,(.+),.+,.+$/\1\n/'`
 
 echo "/JOIN $CHAN" > $IRC_IN
@@ -63,10 +71,6 @@ echo "/QUIT" > $IRC_IN
 # Wait
 wait
 sleep 1
-
-# Cleanup
-rm -rf "$II_PATH"
-rm -f "$PDF"
 
 #
 # End of "$Id$".
