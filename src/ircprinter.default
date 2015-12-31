@@ -1,15 +1,6 @@
-# IRC Printer config file
-###
-## IRC Settings
-###
-
-NICK="printer"
-USER="notone"
-REAL="Almost definitly not a printer."
-
-SERVER="irc.esper.net"
-PORT=5555
-CHAN="#V"
+####
+### IRC Printer config file
+####
 
 ###
 ## Upload Settings

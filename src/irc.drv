@@ -30,7 +30,7 @@ Attribute TTRasterizer "" Type42
 
 // Filters
 //Filter "application/vnd.cups-postscript 100 ps2pdf"
-Filter "application/vnd.cups-postscript 100 ircprinter"
+//Filter "application/vnd.cups-postscript 100 irc"
 
 // Specify the name of the PPD file we want to generate
-PCFileName "ircprinter.ppd"
+PCFileName "irc.ppd"
