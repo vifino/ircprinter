@@ -9,21 +9,39 @@ make
 
 # Install
 sudo make install
-sudo make add-printer
 
-# Configure
+# Configure basics
+# Set the PUUSH Token.
 sudo $EDITOR /etc/default/ircprinter
+
+
+# Add the printer.
+# LPAdmin adds a printer here.
+# -P: Sets the PPD for the printer
+# -D: Description.
+# -p: Printer name.
+# -v: The DEVICE_URI, in this case, these are IRC Links. No password or something, but simple things like irc://user@server:port/#Channel work fine.
+sudo lpadmin \
+	-E \
+	-P ppd/irc.ppd \
+	-D "My IRC Printer." \
+	-p MY-IRC-PRINTER \
+	-v "irc://myprinter@mynetwork.lan:6667/#Printer"
 ```
 
 # Usage
 
-Just print some thing in postscript to the printer IRCPRINTER, but make sure you set the settings in `/etc/default/ircprinter` before.
+Just print some thing in postscript to the printer which you made in the installation.
 
-Currently, there is no support for multiple connections or something more dynamic.
+Remember when I said there will never be support for multiple connections?
 
-Maybe there never will be.
+Yeah...
 
-Well, maybe *someone* will PR it in ;)
+Well, it has now, thanks to irc uris.
+
+Oh well, not being lazy isn't that hard after all.
+
+I'm a bad liar.
 
 # License
 MIT

@@ -1,17 +1,6 @@
-# IRC Printer config file
-###
-## IRC Settings
-## They are only used if the given irc uri doesn't overwrite them.
-###
-
-NICK="printer"
-USER="notone"
-REAL="Almost definitly not a printer."
-
-# This is almost always overwritten.
-SERVER="irc.esper.net"
-PORT=6667
-CHAN="#V"
+####
+### IRC Printer config file
+####
 
 ###
 ## Upload Settings
