@@ -1,23 +1,23 @@
-#!/bin/sh
+#!/bin/bash
 #
 # "$Id$"
 #
 #   IRC-backend for CUPS.
 #
 #   The MIT License (MIT)
-#   
+#
 #   Copyright (c) 2015 Adrian Pistol
-#   
+#
 #   Permission is hereby granted, free of charge, to any person obtaining a copy
 #   of this software and associated documentation files (the "Software"), to deal
 #   in the Software without restriction, including without limitation the rights
 #   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 #   copies of the Software, and to permit persons to whom the Software is
 #   furnished to do so, subject to the following conditions:
-#   
+#
 #   The above copyright notice and this permission notice shall be included in all
 #   copies or substantial portions of the Software.
-#   
+#
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,34 +43,79 @@ fi
 PDF="/tmp/ircprinter.$$.print.pdf"
 II_PATH="/tmp/ircprinter.$$"
 
+LOGFILE="/tmp/ircprinter.log"
+touch $LOGFILE
+
+log(){
+	if [ "$DO_LOG" != "" ]; then
+		echo "$@"
+		echo "$$: $@" >> $LOGFILE
+	fi
+}
+
 cleanup() {
 	# Cleanup func, removes temp files and makes sure ii is dead.
-	rm -rf "$II_PATH"
+	log "Cleanup"
+	rm -rf "$II_PATH" "$PDF"
 	exit $1
 }
 
-trap cleanup INT TERM 
+trap cleanup INT TERM
 
-# Source config.
+# Source config containing PUUSH API key.
+log "sourcing config"
 source /etc/default/ircprinter || exit 1
 
+# Parse DEVICE_URI
+
+# extract the protocol, most likely "irc://"
+log "parsing"
+log "URI: $DEVICE_URI"
+proto="$(echo $DEVICE_URI | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+log "Proto: $proto"
+# remove the protocol
+url="$(echo ${DEVICE_URI/$proto/})"
+log "URL: $url"
+# extract the user (if any)
+nick="$(echo $url | grep @ | cut -d@ -f1)"
+nick=${nick:-NICK}
+log "NICK: $nick"
+# extract the address and port
+server="$(echo ${url/$nick@/} | cut -d/ -f1)"
+addr=${server%%:*}
+port=${server##*:}
+port=${port:-$PORT}
+log "Server: $server"
+log "addr: $addr"
+log "port: $port"
+# extract the chan (if any)
+chan="$(echo $url | grep / | cut -d/ -f2-)"
+log "Chan: $chan"
+
 # Connect to IRC and send the PDF.
-ii -i "$II_PATH" -s "$SERVER" -p "$PORT" -n "$NICK" -f "$REAL" &>> /tmp/out &
-IRC_SERVER_BASE="$II_PATH/$SERVER"
+log "connecting"
+ii -i "$II_PATH" -s "$addr" -p "$port" -n "$nick" -f "$REAL" &>> $LOGFILE &
+IRC_SERVER_BASE="$II_PATH/$addr"
 IRC_IN="$IRC_SERVER_BASE/in"
 
 # Wait for II to init
 while [ ! -e "$IRC_IN" ]; do
 	sleep 1
 done
+log "connected"
 sleep 5
 
 # Convert the PDF to use the time ii takes to initialize
+log "converting"
 echo -n "$DATA" | gs -dSAFER -sDEVICE=pdfwrite -sOutputFile="$PDF" - > /dev/null || cleanup 1
+log "uploading"
 uploaded_pdf=`curl -s "https://puush.me/api/up" -# -F "k=$PUUSH_API_KEY" -F "z=printer" -F "f=@$PDF" | sed -E 's/^.+,(.+),.+,.+$/\1\n/'`
 
-echo "/JOIN $CHAN" > $IRC_IN
-echo "/PRIVMSG $CHAN $uploaded_pdf" > $IRC_IN
+log "writing"
+echo "/JOIN $chan" > $IRC_IN
+sleep 0.5
+echo "/PRIVMSG $chan $uploaded_pdf" > $IRC_IN
+sleep 0.5
 echo "/QUIT" > $IRC_IN
 
 # Wait
