@@ -46,11 +46,15 @@ II_PATH="/tmp/ircprinter.$$"
 LOGFILE="/tmp/ircprinter.log"
 touch $LOGFILE
 
-log(){
+log() { # Logs stuff
 	if [ "$DO_LOG" != "" ]; then
 		echo "$@"
 		echo "$$: $@" >> $LOGFILE
 	fi
+}
+
+send() { # Sends to II
+	echo "$@" > $IRC_IN
 }
 
 cleanup() {
@@ -102,6 +106,9 @@ IRC_IN="$IRC_SERVER_BASE/in"
 while [ ! -e "$IRC_IN" ]; do
 	sleep 1
 done
+if [ "$pass" != "" ]; then
+	send "/PASS $pass"
+fi
 log "connected"
 sleep 5
 
@@ -112,11 +119,11 @@ log "uploading"
 uploaded_pdf=`curl -s "https://puush.me/api/up" -# -F "k=$PUUSH_API_KEY" -F "z=printer" -F "f=@$PDF" | sed -E 's/^.+,(.+),.+,.+$/\1\n/'`
 
 log "writing"
-echo "/JOIN $chan" > $IRC_IN
+send "/JOIN $chan"
 sleep 0.5
-echo "/PRIVMSG $chan $uploaded_pdf" > $IRC_IN
+send "/PRIVMSG $chan $uploaded_pdf"
 sleep 0.5
-echo "/QUIT" > $IRC_IN
+send "/QUIT"
 
 # Wait
 sleep 1
