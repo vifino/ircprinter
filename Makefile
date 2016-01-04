@@ -45,6 +45,8 @@ uninstall:
 	rm /usr/lib/cups/backend/irc
 	@echo -e "\e[32mDone removing files.\e[0;37m"
 
+.PHONY: install uninstall
+
 ppd: ppd/irc.ppd
 
 ppd/irc.ppd: src/irc.drv

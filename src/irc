@@ -33,18 +33,44 @@ if test $# = 0; then
 fi
 
 # Small vars
-INPUT="$6"
+# The Backend arguments.
+# printer job user title copies options [filename]
+#
+#     * printer - The name of the printer queue (normally this is the
+#                 name of the program being run)
+#     * job - The numeric job ID for the job being printed
+#     * user - The string from the originating-user-name attribute
+#     * title - The string from the job-name attribute
+#     * copies - The numeric value from the number-copies attribute
+#     * options - String representations of the job template attributes,
+#             separated by spaces. Boolean attributes are provided as "name"
+#             for true values and "noname" for false values.
+#             All other attributes are provided as "name=value" for
+#             single-valued attributes and "name=value1,value2,...,valueN"
+#             for set attributes
+#     * filename - The request file
+# This includes $0
+PRINTER="$0"
+JOB="$1"
+USER="$2"
+TITLE="$3"
+COPIES="$4"
+OPTIONS="$5"
 if [ "$6" == "" ] ; then
 	# Read from stdin
 	DATA=$(cat)
 else
-	DATA=$(cat $INPUT)
+	DATA=$(cat $6)
 fi
-PDF="/tmp/ircprinter.$$.print.pdf"
-II_PATH="/tmp/ircprinter.$$"
+PDF="$TMPDIR/ircprinter.$$.print.pdf"
+II_PATH="$TMPDIR/ircprinter.$$"
 
-LOGFILE="/tmp/ircprinter.log"
-touch $LOGFILE
+LOGFILE="$TMPDIR/ircprinter.log"
+if [ "$DO_LOG" != "" ]; then
+	touch $LOGFILE
+else
+	LOGFILE="/dev/null"
+fi
 
 log() { # Logs stuff
 	if [ "$DO_LOG" != "" ]; then
@@ -66,12 +92,7 @@ cleanup() {
 
 trap cleanup INT TERM
 
-# Source config containing PUUSH API key.
-log "sourcing config"
-source /etc/default/ircprinter || exit 1
-
 # Parse DEVICE_URI
-
 # extract the protocol, most likely "irc://"
 log "parsing"
 log "URI: $DEVICE_URI"
@@ -81,11 +102,13 @@ log "Proto: $proto"
 url="$(echo ${DEVICE_URI/$proto/})"
 log "URL: $url"
 # extract the user (if any)
-nick="$(echo $url | grep @ | cut -d@ -f1)"
-nick=${nick:-NICK}
+name="$(echo $url | grep @ | cut -d@ -f1)"
+nick=${name%%:*}
+pass=${name##*:}
 log "NICK: $nick"
+log "PASS: $pass"
 # extract the address and port
-server="$(echo ${url/$nick@/} | cut -d/ -f1)"
+server="$(echo ${url/$name@/} | cut -d/ -f1)"
 addr=${server%%:*}
 port=${server##*:}
 port=${port:-$PORT}
@@ -95,6 +118,12 @@ log "port: $port"
 # extract the chan (if any)
 chan="$(echo $url | grep / | cut -d/ -f2-)"
 log "Chan: $chan"
+
+# Source config containing PUUSH API key.
+LINK="λlinkλplaceλholderλyayλ"
+IRC_OUT_FORMAT="$LINK"
+log "sourcing config"
+source /etc/default/ircprinter || exit 1
 
 # Connect to IRC and send the PDF.
 log "connecting"
@@ -121,7 +150,7 @@ uploaded_pdf=`curl -s "https://puush.me/api/up" -# -F "k=$PUUSH_API_KEY" -F "z=p
 log "writing"
 send "/JOIN $chan"
 sleep 0.5
-send "/PRIVMSG $chan $uploaded_pdf"
+send "/PRIVMSG $chan ${IRC_OUT_FORMAT/$LINK/$uploaded_pdf}"
 sleep 0.5
 send "/QUIT"
 
