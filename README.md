@@ -11,7 +11,7 @@ make
 sudo make install
 
 # Configure basics
-# Set the PUUSH Token.
+# Set the PUUSH Token and change the format, if needed.
 sudo $EDITOR /etc/default/ircprinter
 
 
