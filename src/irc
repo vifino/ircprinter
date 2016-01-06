@@ -28,7 +28,7 @@
 
 # Test if CUPS is querying us.
 if test $# = 0; then
-	echo 'direct irc "IRC" "IRC Backend"'
+	echo 'network irc "IRC" "IRC Backend"'
 	exit 0
 fi
 
