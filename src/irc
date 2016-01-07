@@ -143,7 +143,7 @@ sleep 5
 
 # Convert the PDF to use the time ii takes to initialize
 log "converting"
-echo -n "$DATA" | gs -dSAFER -sDEVICE=pdfwrite -sOutputFile="$PDF" - > /dev/null || cleanup 1
+echo -n "$DATA" | gs -dSAFER -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile="$PDF" -sstdout=/dev/null - || cleanup 1
 log "uploading"
 uploaded_pdf=`curl -s "https://puush.me/api/up" -# -F "k=$PUUSH_API_KEY" -F "z=printer" -F "f=@$PDF" | sed -E 's/^.+,(.+),.+,.+$/\1\n/'`
 
